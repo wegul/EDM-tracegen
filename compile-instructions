@@ -1,0 +1,6 @@
+Inside simulator/ directory
+
+$ autoconf
+$ autoreconf -i
+$ ./configure
+$ make

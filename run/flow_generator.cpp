@@ -51,7 +51,7 @@ void FlowGenerator::make_flows() {
 PoissonFlowGenerator::PoissonFlowGenerator(uint32_t num_flows, Topology *topo, std::string filename) : FlowGenerator(num_flows, topo, filename) {};
     
 void PoissonFlowGenerator::make_flows() {
-	assert(false);
+	//assert(false);
     EmpiricalRandomVariable *nv_bytes;
     if (params.smooth_cdf)
         nv_bytes = new EmpiricalRandomVariable(filename);
@@ -158,6 +158,7 @@ void FlowReader::make_flows() {
         // <id> <start_time> blah blah <size in packets> blah blah <src> <dst>
 
         if (!(iss >> id >> start_time >> temp >> temp >> size >> temp >> temp >> s >> d)) {
+            std::cout << "Wrong trace format" << std::endl;
             break;
         }
         

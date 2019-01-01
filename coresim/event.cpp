@@ -140,7 +140,7 @@ void FlowArrivalEvent::process_event() {
         flow_arrivals.pop_front();
     }
 
-    if(params.num_flows_to_run > 10 && flow_arrival_count % 100000 == 0){
+    //if(params.num_flows_to_run > 10 && flow_arrival_count % 100000 == 0){
         double curr_time = get_current_time();
         uint32_t num_unfinished_flows = 0;
         for (uint32_t i = 0; i < flows_to_schedule.size(); i++) {
@@ -161,10 +161,13 @@ void FlowArrivalEvent::process_event() {
             arrival_packets_at_100 = arrival_packets_count;
             num_outstanding_packets_at_100 = num_outstanding_packets;
         }
+        double utilization = ((((1.0*arrival_packets_count - 1.0*num_outstanding_packets) * 1500 * 8.0) / (curr_time-1.0))/16)/100000000;
         std::cout << "## " << current_time << " NumPacketOutstanding " << num_outstanding_packets
             << " NumUnfinishedFlows " << num_unfinished_flows << " StartedFlows " << flow_arrival_count
-            << " StartedPkts " << arrival_packets_count << "\n";
-    }
+            << " StartedPkts " << arrival_packets_count << " Utilization " << utilization << "\n";
+
+        if (flow_arrival_count == 100000) exit(1);
+    //}
 }
 
 

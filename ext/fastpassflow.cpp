@@ -65,7 +65,8 @@ int FastpassFlow::next_pkt_to_send()
 void FastpassFlow::send_data_pkt() {
     this->sender_last_pkt_sent = next_pkt_to_send();
     Packet *p = new Packet(get_current_time(), this, this->sender_last_pkt_sent * mss, 1, mss + hdr_size, src, dst);
-    if(debug_flow(this->id))
+    //if(debug_flow(this->id))
+    if (this->id == 1)
         std::cout << get_current_time() << " flow " << this->id << " send data " << this->sender_last_pkt_sent << " \n";
     total_pkt_sent++;
     next_seq_no += mss;
@@ -87,15 +88,18 @@ void FastpassFlow::fastpass_timeout()
 
 void FastpassFlow::receive(Packet *p) {
     if (p->type == FASTPASS_RTS) {
-        if(debug_flow(this->id))
+        //if(debug_flow(this->id))
+        if (this->id == 1)
             std::cout << get_current_time() << " flow " << this->id << " received rts\n";
         dynamic_cast<FastpassTopology*>(topology)->arbiter->receive_rts((FastpassRTS*) p);
     } else if (p->type == FASTPASS_SCHEDULE) {
-        if(debug_flow(this->id))
+        //if(debug_flow(this->id))
+        if (this->id == 1)
             std::cout << get_current_time() << " flow " << this->id << " received schedule\n";
         ((FastpassHost*) this->src)->receive_schedule_pkt((FastpassSchedulePkt*) p);
     } else if (p->type == NORMAL_PACKET) {
-        if(debug_flow(this->id))
+        //if(debug_flow(this->id))
+        if (this->id == 1)
             std::cout << get_current_time() << " flow " << this->id << " received data seq" << p->seq_no << "\n";
         this->send_ack_pkt(p->seq_no);
         this->received_bytes += mss;
@@ -109,7 +113,8 @@ void FastpassFlow::receive(Packet *p) {
         }
 
     } else if (p->type == ACK_PACKET) {
-        if(debug_flow(this->id))
+        //if(debug_flow(this->id))
+        if (this->id == 1)
             std::cout << get_current_time() << " flow " << this->id << " received ack seq" << p->seq_no << "\n";
         int acked_pkt = p->seq_no/mss;
         if(sender_acked.count(acked_pkt) == 0)

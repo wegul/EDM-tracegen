@@ -79,7 +79,8 @@ std::map<int, FastpassFlow*> FastpassArbiter::schedule_timeslot()
         }
         bool sender_free = sender_used.count(f->src->id) == 0;
         bool receiver_free = receiver_used.count(f->dst->id) == 0;
-        if(debug_flow(f->id) && get_current_time() >= 1.03000023262123){
+        //if(debug_flow(f->id) && get_current_time() >= 1.03000023262123){
+        if(f->id == 1 && get_current_time() >= 1.03000023262123){
             std::cout << get_current_time() << " attempting schedule flow " << f->id << " " << f->src->id << "->" << f->dst->id << " for epoch " <<
                 get_current_time() + params.fastpass_epoch_time << " s_free" << sender_free << " r_free" << receiver_free << " arb_remaining " << f->arbiter_remaining_num_pkts <<
                 " sender_last_pkt_sent " << f->sender_last_pkt_sent << "/" << f->size_in_pkt << "\n";
@@ -92,7 +93,8 @@ std::map<int, FastpassFlow*> FastpassArbiter::schedule_timeslot()
             sender_used.insert(f->src->id);
             receiver_used.insert(f->dst->id);
             schedule[f->src->id] = f;
-            if(debug_flow(f->id))
+            //if(debug_flow(f->id))
+            if (f->id == 1)
                 std::cout << get_current_time() << " scheduled flow " << f->id << " for epoch " << get_current_time() + params.fastpass_epoch_time <<
                     " remaining pkts " << f->arbiter_remaining_num_pkts << "\n";
         }
