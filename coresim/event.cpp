@@ -140,7 +140,7 @@ void FlowArrivalEvent::process_event() {
         flow_arrivals.pop_front();
     }
 
-    //if(params.num_flows_to_run > 10 && flow_arrival_count % 100000 == 0){
+    if(params.num_flows_to_run > 10 && flow_arrival_count % 100000 == 0){
         double curr_time = get_current_time();
         uint32_t num_unfinished_flows = 0;
         for (uint32_t i = 0; i < flows_to_schedule.size(); i++) {
@@ -167,7 +167,7 @@ void FlowArrivalEvent::process_event() {
             << " StartedPkts " << arrival_packets_count << " Utilization " << utilization << "\n";
 
         if (flow_arrival_count == 100000) exit(1);
-    //}
+    }
 }
 
 
