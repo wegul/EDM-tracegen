@@ -2,7 +2,8 @@ import sys
 
 dirname = sys.argv[1]
 
-protocols = ['fastpass', 'pfabric', 'phost']
+#protocols = ['fastpass', 'pfabric', 'phost']
+protocols = ['pfabric']
 load_val = [20, 40, 60, 80]
 
 utilization_val = [0.0 for i in range(len(load_val))]

@@ -27,7 +27,8 @@ PFabricTopology::PFabricTopology(
 
     //Capacities
     double c1 = bandwidth;
-    double c2 = hosts_per_agg_switch * bandwidth / num_core_switches;
+    double c2 = bandwidth;
+    //double c2 = hosts_per_agg_switch * bandwidth / num_core_switches;
 
     // Create Hosts
     for (uint32_t i = 0; i < num_hosts; i++) {
@@ -48,7 +49,7 @@ PFabricTopology::PFabricTopology(
 
     //Connect host queues
     for (uint32_t i = 0; i < num_hosts; i++) {
-        hosts[i]->queue->set_src_dst(hosts[i], agg_switches[i/16]);
+        hosts[i]->queue->set_src_dst(hosts[i], agg_switches[i/hosts_per_agg_switch]);
         //std::cout << "Linking Host " << i << " to Agg " << i/16 << "\n";
     }
 
@@ -57,12 +58,12 @@ PFabricTopology::PFabricTopology(
         // Queues to Hosts
         for (uint32_t j = 0; j < hosts_per_agg_switch; j++) { // TODO make generic
             Queue *q = agg_switches[i]->queues[j];
-            q->set_src_dst(agg_switches[i], hosts[i * 16 + j]);
+            q->set_src_dst(agg_switches[i], hosts[i * hosts_per_agg_switch + j]);
             //std::cout << "Linking Agg " << i << " to Host" << i * 16 + j << "\n";
         }
         // Queues to Core
         for (uint32_t j = 0; j < num_core_switches; j++) {
-            Queue *q = agg_switches[i]->queues[j + 16];
+            Queue *q = agg_switches[i]->queues[j + hosts_per_agg_switch];
             q->set_src_dst(agg_switches[i], core_switches[j]);
             //std::cout << "Linking Agg " << i << " to Core" << j << "\n";
         }
@@ -80,6 +81,7 @@ PFabricTopology::PFabricTopology(
 
 
 Queue *PFabricTopology::get_next_hop(Packet *p, Queue *q) {
+    uint32_t hosts_per_agg_switch = this->num_hosts / this->num_agg_switches;
     if (q->dst->type == HOST) {
         return NULL; // Packet Arrival
     }
@@ -88,26 +90,26 @@ Queue *PFabricTopology::get_next_hop(Packet *p, Queue *q) {
     if (q->src->type == HOST) { // Same Rack or not
         assert (p->src->id == q->src->id);
 
-        if (p->src->id / 16 == p->dst->id / 16) {
-            return ((Switch *) q->dst)->queues[p->dst->id % 16];
+        if (p->src->id / hosts_per_agg_switch == p->dst->id / hosts_per_agg_switch) {
+            return ((Switch *) q->dst)->queues[p->dst->id % hosts_per_agg_switch];
         } 
         else {
             uint32_t hash_port = 0;
             if(params.load_balancing == 0)
-                hash_port = q->spray_counter++%4;
+                hash_port = q->spray_counter++ % this->num_core_switches;
             else if(params.load_balancing == 1)
-                hash_port = (p->src->id + p->dst->id + p->flow->id) % 4;
-            return ((Switch *) q->dst)->queues[16 + hash_port];
+                hash_port = (p->src->id + p->dst->id + p->flow->id) % this->num_core_switches;
+            return ((Switch *) q->dst)->queues[hosts_per_agg_switch + hash_port];
         }
     }
 
     // At switch level
     if (q->src->type == SWITCH) {
         if (((Switch *) q->src)->switch_type == AGG_SWITCH) {
-            return ((Switch *) q->dst)->queues[p->dst->id / 16];
+            return ((Switch *) q->dst)->queues[p->dst->id / hosts_per_agg_switch];
         }
         if (((Switch *) q->src)->switch_type == CORE_SWITCH) {
-            return ((Switch *) q->dst)->queues[p->dst->id % 16];
+            return ((Switch *) q->dst)->queues[p->dst->id % hosts_per_agg_switch];
         }
     }
 
@@ -117,7 +119,8 @@ Queue *PFabricTopology::get_next_hop(Packet *p, Queue *q) {
 
 double PFabricTopology::get_oracle_fct(Flow *f) {
     int num_hops = 4;
-    if (f->src->id/16 == f->dst->id/16) {
+    uint32_t hosts_per_agg_switch = this->num_hosts / this->num_agg_switches;
+    if (f->src->id/hosts_per_agg_switch == f->dst->id/hosts_per_agg_switch) {
         num_hops = 2;
     }
     double propagation_delay;
@@ -149,7 +152,7 @@ double PFabricTopology::get_oracle_fct(Flow *f) {
             ) * 8.0 / bandwidth;
         if (num_hops == 4) {
             //1 packet and 1 ack
-            transmission_delay += 2 * (2*params.hdr_size) * 8.0 / (4 * bandwidth);
+            transmission_delay += 2 * (2*params.hdr_size) * 8.0 / (bandwidth);
         }
         //std::cout << "pd: " << propagation_delay << " td: " << transmission_delay << std::endl;
     }
@@ -159,11 +162,11 @@ double PFabricTopology::get_oracle_fct(Flow *f) {
 			// 1 packet and 1 ack
 			if (np == 0) {
 				// less than mss sized flow. the 1 packet is leftover sized.
-				transmission_delay += 2 * (leftover + 2*params.hdr_size) * 8.0 / (4 * bandwidth);
+				transmission_delay += 2 * (leftover + 2*params.hdr_size) * 8.0 / (bandwidth);
 				
 			} else {
 				// 1 packet is full sized
-				transmission_delay += 2 * (params.mss + 2*params.hdr_size) * 8.0 / (4 * bandwidth);
+				transmission_delay += 2 * (params.mss + 2*params.hdr_size) * 8.0 / (bandwidth);
 			}
 		}
         //transmission_delay = 

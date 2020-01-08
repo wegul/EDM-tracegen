@@ -159,9 +159,10 @@ void run_experiment(int argc, char **argv, uint32_t exp_type) {
 
     std::string conf_filename(argv[2]);
     read_experiment_parameters(conf_filename, exp_type);
+    int oversubscription = 1;
     params.num_hosts = 144;
     params.num_agg_switches = 9;
-    params.num_core_switches = 4;
+    params.num_core_switches = 16/oversubscription;
     
     if (params.flow_type == FASTPASS_FLOW) {
         topology = new FastpassTopology(params.num_hosts, params.num_agg_switches, params.num_core_switches, params.bandwidth, params.queue_type);
@@ -219,7 +220,7 @@ void run_experiment(int argc, char **argv, uint32_t exp_type) {
     for (uint32_t i = 0; i < flows_sorted.size(); i++) {
         Flow* f = flows_sorted[i];
         if (exp_type == GEN_ONLY) {
-            std::cout << f->id << " " << f->size << " " << f->src->id << " " << f->dst->id << " " << 1e6*f->start_time << "\n";
+            std::cout << f->id << "," << f->src->id << "," << f->dst->id << "," << f->size << "," << (f->start_time-1) << "\n";
         }
         else {
             flow_arrivals.push_back(new FlowArrivalEvent(f->start_time, f));

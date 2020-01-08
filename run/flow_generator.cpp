@@ -154,18 +154,35 @@ void FlowReader::make_flows() {
         double start_time, temp;
         uint32_t size, s, d;
         uint32_t id;
+        int count = 0;
+
+        std::string token;
+        while(std::getline(iss,token,',')) {
+            if (count == 0) {
+                id = stoi(token);
+            } else if (count == 1) {
+                s = stoi(token);
+            } else if (count == 2) {
+                d = stoi(token);
+            } else if (count == 3) {
+                size = stoi(token);
+            } else if (count == 4) {
+                start_time = stof(token)+1.0;
+            }
+            ++count;
+        }
         
         // <id> <start_time> blah blah <size in packets> blah blah <src> <dst>
 
-        if (!(iss >> id >> start_time >> temp >> temp >> size >> temp >> temp >> s >> d)) {
-            std::cout << "Wrong trace format" << std::endl;
-            break;
-        }
+        //if (!(iss >> id >> start_time >> temp >> temp >> size >> temp >> temp >> s >> d)) {
+        //    std::cout << "Wrong trace format" << std::endl;
+        //    break;
+        //}
         
-        size = (uint32_t) (params.mss * size);
-        assert(size > 0);
+        //size = (uint32_t) (params.mss * size);
+        //assert(size > 0);
 
-        std::cout << "Flow " << id << " " << start_time << " " << size << " " << s << " " << d << "\n";
+        //std::cout << "Flow " << id << " " << start_time << " " << size << " " << s << " " << d << "\n";
         flows_to_schedule.push_back(
             Factory::get_flow(id, start_time, size, topo->hosts[s], topo->hosts[d], params.flow_type)
         );

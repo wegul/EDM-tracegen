@@ -136,6 +136,6 @@ int main (int argc, char ** argv) {
     time_t end_time;
     time(&end_time);
     double duration = difftime(end_time, start_time);
-    cout << currentDateTime() << " Simulator ended. Execution time: " << duration << " seconds\n";
+    //cout << currentDateTime() << " Simulator ended. Execution time: " << duration << " seconds\n";
 }
 
