@@ -34,14 +34,14 @@ def main():
     newfilename = args.fo
     wr_rate = float(args.ratio)
 
-    trace = pd.read_csv(filename, header=None)
+    trace = pd.read_csv(filename, header=None, dtype=str)
 
     # Change second to timeslot_num
     timeslots = []
     start_time_arr = trace.iloc[:, -1].values
     for time in start_time_arr:
-        slot = (int)(time/slot_time)
-        timeslots.append(slot)
+        slot = (int)(float(time)/slot_time)
+        timeslots.append(str(slot))
     trace.iloc[:, -1] = pd.Series(timeslots)
 
     # Add flowType
