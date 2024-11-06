@@ -14,3 +14,7 @@ install-sh
 *.dirstamp*
 simulator
 simdebug
+
+*.csv
+conf*.txt
+configure~
