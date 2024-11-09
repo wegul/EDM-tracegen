@@ -14,8 +14,8 @@ import pandas as pd
 
 
 def assignFlowType(wr_rate, seed):
-    thres = wr_rate*10
-    if seed > thres:
+    thres = wr_rate*10.01
+    if seed >= thres:
         return 1  # RREQ
     else:
         return 3  # WREQ
@@ -28,10 +28,12 @@ def main():
     parser.add_argument('-c', default=8)  # packet size, in bytes
     parser.add_argument('-ratio', default=0.5)  # ratio == wreq/ all
     parser.add_argument('-fo', required=True)
+    parser.add_argument('-short', action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
     slot_time = (float(args.c) * 8.0) / float(args.b) * 1e-9
     filename = args.fi
     newfilename = args.fo
+    isShort = args.short
     wr_rate = float(args.ratio)
 
     trace = pd.read_csv(filename, header=None, dtype=str)
@@ -54,6 +56,8 @@ def main():
         flowType = assignFlowType(wr_rate, seed)
         if flowType == 1:  # RREQ
             flowSize[i] = 16
+        elif isShort is True:  # this is short flow, change to 64B!
+            flowSize[i] = 64
         flowType_arr.append(flowType)
 
     trace.iloc[:, 3] = pd.Series(flowSize)
@@ -63,7 +67,11 @@ def main():
     reqLen_arr = []
     for i in range(0, len(flowType_arr)):
         if flowType_arr[i] == 1:
-            reqLen_arr.append(old_flowSize[i])
+            # For long flow, just append old flow size
+            if isShort is True:  # For short flow, fixed 64
+                reqLen_arr.append(64)
+            else:
+                reqLen_arr.append(old_flowSize[i])
         else:
             reqLen_arr.append(-1)
     trace.insert(5, column=None, value=reqLen_arr)
