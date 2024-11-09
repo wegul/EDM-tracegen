@@ -2,6 +2,7 @@
 
 # Generate long flows
 testdir="../../simulation/testdir"
+mkdir -p "$testdir"
 declare -a workload=("sparksql" "graphlab" "memcached" "hadoop" "spark")
 for dir in "${workload[@]}"; do
     mkdir -p "$dir"
