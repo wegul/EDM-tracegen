@@ -1,5 +1,3 @@
-YAPS = Yet Another Packet Simulator
-==================================
 
 # 1. Build
 Inside simulator/ directory
